@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/mypage.css">
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=600bf33546f699d7ab4c0fafc02c2cff"></script>
+</head>
+<body class="green-bg">
+  <div id="header-container"></div>
+  <header>
+    <img src="<%= profile %>" class="profile-img">
+    <h1><%= username %>님, 환영합니다!</h1>
+    <a href="/logout">로그아웃</a>
+  </header>
+
+  <section>
+    <h2>커뮤니티 활동</h2>
+    <p>내 글 개수: <%= myPosts.length %></p>
+    <h3>내 글</h3>
+    <ul>
+      <% myPosts.forEach(p => { %>
+        <li><%= p.title %> - <%= p.author %></li>
+      <% }) %>
+    </ul>
+    <h3>내 댓글</h3>
+    <ul>
+      <% myComments.forEach(c => { %>
+        <li><%= c.content %> (<%= c.postId %>)</li>
+      <% }) %>
+    </ul>
+    <h3>좋아요한 글</h3>
+    <ul>
+      <% myLikes.forEach(l => { %>
+        <li><a href="/community/post/<%= l.postId %>"><%= l.title %></a></li>
+
+      <% }) %>
+    </ul>
+  </section>
+
+  <section>
+    <h2>병원 예약 일정</h2>
+    <div id="map" style="width:100%;height:300px;"></div>
+    <script>
+      var map = new kakao.maps.Map(document.getElementById('map'), {
+        center: new kakao.maps.LatLng(37.5665, 126.9780),
+        level: 3
+      });
+    </script>
+    <form action="/schedule/add" method="post" class="schedule-form">
+      <input type="hidden" name="hospitalId" value="병원ID">
+      <label>날짜</label><input type="date" name="date" required>
+      <label>시간</label><input type="time" name="time" required>
+      <button type="submit">일정 등록</button>
+    </form>
+    <ul>
+      <% schedules.filter(s => s.user === username).forEach(s => { %>
+        <li><%= s.date %> <%= s.time %> - 병원 #<%= s.hospitalId %></li>
+      <% }) %>
+    </ul>
+  </section>
+<script src="/js/header-loader.js"></script>
+</body>
+</html>

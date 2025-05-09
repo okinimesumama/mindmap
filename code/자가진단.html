@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>자가진단 테스트</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="header-container"></div>
+  <header>
+    <h1><a href="메인 화면.html" style="text-decoration: none; color: white;">MINDMAP</a></h1>
+    <h3 style="color: white;">멘탈케어 올인원 사이트</h3>
+  </header>
+ 
+  <nav>
+    <a href="커뮤니티.html" onclick="showTab('community')">커뮤니티</a>
+    <a href="자가진단.html" onclick="showTab('selfCheck')">자가진단</a>
+    <a href="정책 연결.html" onclick="showTab('policy')">복지 서비스 알아보기</a>
+    <a href="병원 찾기.html" onclick="showTab('hospitalSearch')">병원 찾기</a>
+    <a href="여기저기추천.html" onclick="showTab('hospitalSearch')">3 in 1 추천 루트</a>
+    <a href="챌린지.html" onclick="showTab('hospitalSearch')">마인드 챌린지</a>
+  </nav>
+
+
+  <div class="container">
+
+    <h1>생애주기별 자가진단 바로가기</h1>
+    <p>아동, 청소년, 성인 등 생애주기에 맞춘 자가진단</p>
+    <div style="margin-bottom: 1.5rem;">
+      <button onclick="window.open('https://www.mentalhealth.go.kr/portal/mdexmn/selectMdexmnList.do', '_blank')">생애 주기별 자가진단</button>
+    </div>
+
+    <h1>질환별 자가진단 바로가기</h1>
+    <p>특정 질환 별 자가진단</p>
+    <div style="margin-bottom: 1.5rem;">
+      <button onclick="window.open('https://www.mentalhealth.go.kr/portal/mdexmnDtl/mdexmnTypeList.do', '_blank')">질환별 자가진단</button>
+    </div>
+
+  </div>
+
+  <div class="under-button">
+    <a href="https://mindmapchatbot-dwdnjzwsthkpheeuttbcpv.streamlit.app/" target="_blank">
+      <button class="menu-button">챗봇 상담</button>
+    </a>
+    <a href="메인 화면.html">
+      <button class="menu-button">홈으로 돌아가기</button>
+    </a>
+  </div>
+<script src="/js/header-loader.js"></script>
+</body>
+</html>

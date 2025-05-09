@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>게시글 수정</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+
+<body>
+  <header>
+    <h1><a href="메인 화면.html" style="text-decoration: none; color: white;">MINDMAP</a></h1>
+    <h3 style="color: white;">멘탈케어 올인원 사이트</h3>
+  </header>
+
+
+  <div class="container">
+    <div id="editPostContainer" class="edit-modal-content">
+      <span class="close-button" onclick="window.location.href='커뮤니티.html'">&times;</span>
+      <h3>게시글 수정</h3>
+      <hr />
+      <p>
+        <label for="editTitle">제목</label><br />
+        <input id="editTitle" />
+      </p>
+      <p>
+        <label for="editContent">내용</label><br />
+        <textarea id="editContent"></textarea>
+      </p>
+      <button onclick="submitEdit()">수정 완료</button>
+    </div>
+  </div>
+
+  <script>
+    const titleInput = document.getElementById("editTitle");
+    const contentInput = document.getElementById("editContent");
+
+    const postToEdit = JSON.parse(localStorage.getItem("editPost"));
+    if (postToEdit) {
+      titleInput.value = postToEdit.title;
+      contentInput.value = postToEdit.content;
+    }
+
+    function submitEdit() {
+      const editedPost = {
+        id: postToEdit.id,
+        title: titleInput.value,
+        content: contentInput.value,
+        time: postToEdit.time,
+      };
+
+      // 기존 posts 불러오기
+      let posts = JSON.parse(localStorage.getItem("posts")) || [];
+      const index = posts.findIndex(p => p.id === editedPost.id);
+      if (index !== -1) {
+        posts[index] = editedPost;
+        localStorage.setItem("posts", JSON.stringify(posts));
+      }
+
+      localStorage.removeItem("editPost");
+      window.location.href = "커뮤니티.html";
+    }
+  </script>
+</body>
+</html>

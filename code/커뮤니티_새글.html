@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>새 글 작성</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #eaffea;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #8dae57;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h1, h3 {
+      margin-top: 0;
+    }
+    label {
+      display: block;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: white;
+      color: #77a738;
+      border: 2px solid #77a738;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #4CAF50;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MINDMAP - 새 글 작성</h1>
+  </header>
+  <div class="container">
+    <h3>글을 작성해보세요</h3>
+    <label for="titleInput">제목</label>
+    <input id="titleInput" type="text" placeholder="제목을 입력하세요" />
+
+    <label for="contentInput">내용</label>
+    <textarea id="contentInput" rows="8" placeholder="내용을 입력하세요"></textarea>
+
+    <button onclick="submitPost()">등록</button>
+    <button onclick="window.location.href='커뮤니티.html'">취소</button>
+  </div>
+
+  <script>
+    async function submitPost() {
+      const title = document.getElementById("titleInput").value.trim();
+      const content = document.getElementById("contentInput").value.trim();
+      if (!title || !content) return alert("제목과 내용을 모두 입력해주세요.");
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content })
+      });
+      const result = await res.json();
+      if (result.success) {
+        alert("글이 작성되었습니다.");
+        window.location.href = "커뮤니티.html";
+      } else {
+        alert("작성 실패: " + result.message);
+      }
+    }
+  </script>
+</body>
+</html>

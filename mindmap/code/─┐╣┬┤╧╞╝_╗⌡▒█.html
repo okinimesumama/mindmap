@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>새 글 작성</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+
+<body>
+  <header>
+    <h1><a href="메인 화면.html" style="text-decoration: none; color: white;">MINDMAP</a></h1>
+    <h3 style="color: white;">멘탈케어 올인원 사이트</h3>
+  </header>
+
+  <div class="container">
+    <div id="newPostContainer" class="edit-modal-content">
+      <span class="close-button" onclick="window.location.href='커뮤니티.html'">&times;</span>
+      <h3>새 글 작성하기</h3>
+      <hr />
+      <p>
+        <label for="titleInput">제목</label><br />
+        <input id="titleInput" type="text" placeholder="제목을 입력하세요" />
+      </p>
+      <p>
+        <label for="contentInput">내용</label><br />
+        <textarea id="contentInput" placeholder="내용을 입력하세요"></textarea>
+      </p>
+      <div class="button-group">
+        <button id="submitBtn">등록</button>
+        <button id="cancelBtn" onclick="window.location.href='커뮤니티.html'">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const submitBtn = document.getElementById("submitBtn");
+
+      submitBtn.addEventListener("click", function () {
+        const title = document.getElementById("titleInput").value.trim();
+        const content = document.getElementById("contentInput").value.trim();
+
+        if (!title || !content) {
+          alert("제목과 내용을 모두 입력해주세요.");
+          return;
+        }
+
+        addNewPost(title, content);
+        window.location.href = "커뮤니티.html";
+       });
+    });
+  </script>
+</body>
+</html>

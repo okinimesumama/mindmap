@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>글 수정</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1><a href="메인 화면.html" style="text-decoration: none; color: white;">MINDMAP</a></h1>
+    <h3 style="color: white;">멘탈케어 올인원 사이트</h3>
+  </header>
+  <div class="container">
+    <div class="edit-modal-content">
+      <span class="close-button" onclick="window.location.href='커뮤니티.html'">&times;</span>
+      <h3>글 수정하기</h3><hr />
+      <p><label for="title">제목</label><br />
+      <input id="title" type="text" /></p>
+      <p><label for="content">내용</label><br />
+      <textarea id="content"></textarea></p>
+      <div class="button-group">
+        <button id="submitBtn">수정</button>
+        <button onclick="window.location.href='커뮤니티.html'">취소</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get("id");
+
+    window.onload = async () => {
+      if (!postId) return alert("글 ID가 없습니다.");
+      const res = await fetch("/api/posts/" + postId);
+      const data = await res.json();
+      if (!data) return alert("글을 불러올 수 없습니다.");
+      document.getElementById("title").value = data.title;
+      document.getElementById("content").value = data.content;
+    };
+
+    document.getElementById("submitBtn").addEventListener("click", async () => {
+      const title = document.getElementById("title").value.trim();
+      const content = document.getElementById("content").value.trim();
+      if (!title || !content) return alert("제목과 내용을 입력해주세요.");
+      const res = await fetch("/api/posts/" + postId, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content })
+      });
+      const result = await res.json();
+      if (result.success) {
+        alert("수정 완료!");
+        window.location.href = "커뮤니티.html";
+      } else {
+        alert("수정 실패: " + result.message);
+      }
+    });
+  </script>
+</body>
+</html>

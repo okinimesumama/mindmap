@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>정부 지원</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header>
+    <h1><a href="메인 화면.html" style="text-decoration: none; color: white;">MINDMAP</a></h1>
+    <h3 style="color: white;">멘탈케어 올인원 사이트</h3>
+  </header>
+ 
+  <nav>
+    <a href="커뮤니티.html" onclick="showTab('community')">커뮤니티</a>
+    <a href="자가진단.html" onclick="showTab('selfCheck')">자가진단</a>
+    <a href="정책 연결.html" onclick="showTab('policy')">정부 지원 알아보기</a>
+    <a href="병원 찾기.html" onclick="showTab('hospitalSearch')">병원 찾기</a>
+    <a href="여기저기추천.html" onclick="showTab('hospitalSearch')">3 in 1 추천 루트</a>
+    <a href="챌린지.html" onclick="showTab('hospitalSearch')">마인드 챌린지</a>
+  </nav>
+
+  
+  <div class="container">
+    <h1>정부 지원 알아보기</h1>
+    <p>근처 정신 재활 시설과 나에게 맞는 복지 서비스를 찾아보세요!</p>
+    <h2>서울시 정신 재활 시설</h2>
+    <button onclick="showLocation()">현재 위치 기준으로 서울시 정신 재활 시설 찾아보기</button><br><br>
+    <h2>정신 복지 서비스</h2>
+    <div class="bokji-buttons">
+      <button 
+        onclick="window.open('https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52005M.do', '_blank')" 
+        style="background: url(Bokji1.png) no-repeat center center; background-size: contain; width: 240px; height: 200px; border: none;">
+        나에게 알맞은 복지 서비스 알아보기</button>
+      <button 
+        onclick="window.open('https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00005567&wlfareInfoReldBztpCd=01', '_blank')" 
+        style="background: url(Bokji2.png) no-repeat center center; background-size: contain; width: 240px; height: 200px; border: none;">
+        전국민 마음투자 지원 사업</button>
+      <button 
+        onclick="window.open('https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00001160&wlfareInfoReldBztpCd=01', '_blank')" 
+        style="background: url(Bokji2.png) no-repeat center center; background-size: contain; width: 240px; height: 200px; border: none;">
+        알코올 중독자 사례관리 사업</button>
+      <button 
+        onclick="window.open('https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00003200&wlfareInfoReldBztpCd=01', '_blank')" 
+        style="background: url(Bokji2.png) no-repeat center center; background-size: contain; width: 240px; height: 200px; border: none;">
+        청소년 동반자 프로그램</button>
+      <button 
+        onclick="window.open('https://www.bokjiro.go.kr/ssis-tbu/twataa/wlfareInfo/moveTWAT52011M.do?wlfareInfoId=WLF00000022&wlfareInfoReldBztpCd=01', '_blank')" 
+        style="background: url(Bokji2.png) no-repeat center center; background-size: contain; width: 240px; height: 200px; border: none;">
+        사회 심리 재활 지원</button>
+    </div>
+    <!-- 모달 창 -->
+    <div id="rehab-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>서울시 정신 재활 시설</h2>
+        <div id="mental-health-list" class="location-list" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="under-button">
+    <a href="https://mentalcare-nitrq6doi4gagptmmnjsys.streamlit.app/" target="_blank">
+      <button class="menu-button">챗봇 상담</button>
+    </a>
+    <a href="메인 화면.html">
+      <button class="menu-button">홈으로 돌아가기</button>
+    </a>
+  </div>
+
+  <script src="script.js"></script>
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=daf71dc54132253e886554b17a000a86&libraries=services"></script>
+  <script>
+    let mentalHealthFacilityData = [];
+  
+    // 공통 데이터 fetch 함수
+    function fetchData(url, callback) {
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          callback(data);
+        })
+        .catch(err => {
+          alert(`${url} 데이터를 불러오는 데 실패했어요.`);
+          console.error(err);
+        });
+    }
+  
+    // 데이터 fetch 호출
+    fetchData("서울시 정신보건복지시설.json", data => mentalHealthFacilityData = data);
+  
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+      } else {
+        alert("이 브라우저에서는 위치 정보를 사용할 수 없어요.");
+      }
+    }
+
+    // 모달 열기
+    function showLocation() {
+      const modal = document.getElementById("rehab-modal");
+      modal.style.display = "block";
+      getLocation();
+    }
+
+    // 모달 닫기
+    function closeModal() {
+      const modal = document.getElementById("rehab-modal");
+      modal.style.display = "none";
+
+      const resultsContainer = document.getElementById("mental-health-list");
+      resultsContainer.innerHTML = ""; // 검색 결과 초기화
+    }
+    
+  
+    function showPosition(position) {
+      const userLat = position.coords.latitude;
+      const userLon = position.coords.longitude;
+  
+      // 병원, 공원, 문화공간, 정신보건복지시설 데이터를 각각 처리
+      displayNearestLocations(mentalHealthFacilityData, userLat, userLon, "mental-health-list", "시설명", "시설주소", "시설종류명(시설유형)", "전화번호");
+    }
+
+    // 공통 거리 계산 함수
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371; // 지구 반경 (km)
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c; // km 반환
+    }
+  
+    // 공통 데이터 처리 및 출력 함수
+    function displayNearestLocations(data, userLat, userLon, listId, nameKey, addressKey, infoKey, numKey) {
+      const listElement = document.getElementById(listId);
+      if (!listElement) {
+        console.error(`ID가 '${listId}'인 요소를 찾을 수 없습니다.`);
+        return;
+      }
+  
+      // 각 데이터와 거리 계산
+      const processed = data.map(item => {
+        const [lat, lon] = item["위도,경도"].split(",").map(Number);
+        const dist = getDistance(userLat, userLon, lat, lon);
+        return { ...item, lat, lon, distance: dist };
+      });
+  
+      // 가까운 순 정렬 후 출력
+      processed.sort((a, b) => a.distance - b.distance);
+  
+      listElement.innerHTML = "";
+      processed.slice(0, 5).forEach(item => {
+        const card = document.createElement("div");
+        card.classList.add("location-card");
+  
+        card.innerHTML = `
+          <p><h3>${item[nameKey]}</h3></p>
+          <p><strong>주소:</strong> ${item[addressKey]}</p>
+          <p><strong>시설 종류명:</strong> ${item[infoKey]}</p>
+          <p><strong>전화번호:</strong> ${item[numKey]}</p>
+          <a href="https://map.kakao.com/?q=${item[nameKey]}" target="_blank">카카오맵에서 보기</a>
+        `;
+  
+        listElement.appendChild(card);
+      });
+    }
+
+    function showError(error) {
+      alert("위치 정보를 가져오지 못했어요.");
+    }
+
+  </script>
+
+  <style>
+    .bokji-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      padding-top: 0;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .bokji-buttons button {
+      padding: 20px;
+      padding-bottom: 5px;
+      font-size: 1.4rem;
+      color: #568034;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      align-items: end;
+    }
+  </style>
+
+</body>
+  

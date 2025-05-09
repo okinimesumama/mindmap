@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>챌린지</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="header-container"></div>
+  <header>
+    <h1><a href="메인 화면.html" style="text-decoration: none; color: white;">MINDMAP</a></h1>
+    <h3 style="color: white;">멘탈케어 올인원 사이트</h3>
+  </header>
+
+  <nav>
+    <a href="커뮤니티.html" onclick="showTab('community')">커뮤니티</a>
+    <a href="자가진단.html" onclick="showTab('selfCheck')">자가진단</a>
+    <a href="정책 연결.html" onclick="showTab('policy')">복지 서비스 알아보기</a>
+    <a href="병원 찾기.html" onclick="showTab('hospitalSearch')">병원 찾기</a>
+    <a href="여기저기추천.html" onclick="showTab('hospitalSearch')">3 in 1 추천 루트</a>
+    <a href="챌린지.html" onclick="showTab('hospitalSearch')">마인드 챌린지</a>
+  </nav>
+
+  <div class="container">
+    <h1>이 주의 마인드 챌린지</h1>
+    <p>건강한 하루와 한 주를 만들어가기 위해, 아래 챌린지들을 실천해봐요!</p>
+    
+    <div class="challenge_con">
+      <div class="challenge">
+        <h2>🌟 데일리 챌린지</h2>
+        <p>아래 항목 중 오늘 실천한 것들을 체크해보세요!</p>
+        <div class="checklist" id="daily-checklist">
+          <label><input type="checkbox" value="1"> 8시간 이상 숙면</label><br><hr>
+          <label><input type="checkbox" value="1"> 30분 이상 산책</label><br><hr>
+          <label><input type="checkbox" value="1"> 이부자리 정리하기</label><br><hr>
+          <label><input type="checkbox" value="1"> 명상 또는 심호흡 10분</label><br><hr>
+          <label><input type="checkbox" value="1"> 친구/가족과 대화하기</label><br><hr>
+          <label><input type="checkbox" value="1"> 물 1L 이상 마시기</label><br><hr>
+          <label><input type="checkbox" value="1"> 규칙적인 식사하기</label><br><hr>
+          <label><input type="checkbox" value="1"> 약 챙겨먹기</label><br><hr>
+          <label><input type="checkbox" value="1"> 좋아하는 음악 듣기</label><br><hr>
+          <label><input type="checkbox" value="1"> 일기 쓰기 또는 감정 기록하기</label><br><hr>
+        </div>
+        <button onclick="calculateDailyScore()">데일리 점수 보기</button>
+        <div id="daily-result"></div>
+      </div>
+
+      <div class="challenge">
+        <h2>🌟 위클리 챌린지</h2>
+        <p>아래 항목 중 이주에 실천한 것들을 체크해보세요!</p>
+        <div class="checklist" id="weekly-checklist">
+          <label><input type="checkbox" value="1"> 병원 가기</label><br><hr>
+          <label><input type="checkbox" value="1"> 공원 15분 이상 산책하기</label><br><hr>
+          <label><input type="checkbox" value="1"> 문화센터에 가서 수업 수강하기</label><br><hr>
+        </div>
+        <button onclick="calculateWeeklyScore()">위클리 점수 보기</button>
+        <div id="weekly-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="under-button">
+    <a href="https://mindmapchatbot-dwdnjzwsthkpheeuttbcpv.streamlit.app/" target="_blank">
+      <button class="menu-button">챗봇 상담</button>
+    </a>
+    <a href="메인 화면.html">
+      <button class="menu-button">홈으로 돌아가기</button>
+    </a>
+  </div>
+
+  <script>
+    function calculateDailyScore() {
+      const dailyChecks = document.querySelectorAll('#daily-checklist input[type="checkbox"]:checked');
+      const dailyScore = dailyChecks.length;
+      let dailyMessage = '';
+
+      if (dailyScore >= 6) dailyMessage = '아주 멋진 하루였네요. 내일도 좋은 하루를 만들어봐요!';
+      else if (dailyScore >= 3) dailyMessage = '평범한 하루였네요. 평범함이 가장 소중하다는 거, 아시죠?';
+      else dailyMessage = '오늘은 조금 힘든 하루였네요. 내일은 조금 더 좋은 하루를 만들어봐요!';
+
+      document.getElementById('daily-result').innerText = `데일리 실천 점수: ${dailyScore}/10\n${dailyMessage}`;
+    }
+
+    function calculateWeeklyScore() {
+      const weeklyChecks = document.querySelectorAll('#weekly-checklist input[type="checkbox"]:checked');
+      const weeklyScore = weeklyChecks.length;
+      let weeklyMessage = '';
+
+      if (weeklyScore >= 2) weeklyMessage = '이번 주 정말 잘하고 있어요! 계속해서 좋은 습관을 유지해봐요!';
+      else if (weeklyScore >= 1) weeklyMessage = '좋은 시작이에요! 조금 더 노력해봐요!';
+      else weeklyMessage = '이번 주는 아직 시작하지 않았네요. 지금부터 시작해도 늦지 않았어요!';
+
+      document.getElementById('weekly-result').innerText = `위클리 실천 점수: ${weeklyScore}/3\n${weeklyMessage}`;
+    }
+  </script>
+  <script src="/js/header-loader.js"></script>
+</body>
+
+<style>
+  .challenge_con {
+    display: flex; /* Flexbox 사용 */
+    justify-content: space-around; /* 챌린지 간격 조정 */
+    flex-wrap: wrap; /* 화면 크기에 따라 줄 바꿈 */
+    margin: 2rem 0;
+  }
+
+  .challenge {
+    flex: 1; /* 각 챌린지가 동일한 비율로 너비를 차지 */
+    min-width: 45%; /* 최소 너비를 화면 크기에 비례하게 설정 */
+    max-width: 30%; /* 최대 너비를 화면 크기에 비례하게 설정 */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 2rem; /* 패딩을 더 추가 */
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .challenge h2 {
+    text-align: center;
+    color: #416831;
+  }
+
+  .checklist {
+    margin: 1rem 0;
+  }
+</style>
+
+</html>

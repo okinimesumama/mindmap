@@ -1,0 +1,27 @@
+{
+  "posts": [
+    {
+      "id": 4,
+      "author": "mindmap",
+      "title": "우아앙",
+      "content": "됐다",
+      "createdAt": "2025-05-09T09:12:00.835Z"
+    },
+    {
+      "id": 5,
+      "author": "서울시민",
+      "title": "응아아아",
+      "content": "진짜 된다",
+      "createdAt": "2025-05-09T09:20:00.671Z"
+    }
+  ],
+  "comments": [
+    {
+      "postId": 5,
+      "content": "드디어 탈출이다..",
+      "author": "mindmap",
+      "timestamp": "2025-05-09T10:08:05.220Z"
+    }
+  ],
+  "likes": []
+}

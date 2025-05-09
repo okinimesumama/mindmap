@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>루트추천</title>
+  <link rel="stylesheet" href="style.css">
+
+<script>
+  window.kakaoLoaded = false;
+
+  function loadKakaoMapSdk() {
+    const script = document.createElement('script');
+    script.onload = () => {
+      window.kakaoLoaded = true;
+      console.log("✅ 카카오맵 로딩 완료");
+    };
+    script.onerror = () => {
+      alert("❌ 카카오맵 SDK 로딩 실패. 네트워크나 키를 확인해주세요.");
+    };
+    script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey=600bf33546f699d7ab4c0fafc02c2cff&libraries=services";
+    document.head.appendChild(script);
+  }
+
+  window.onload = loadKakaoMapSdk;
+</script>
+
+</head>
+
+
+<body>
+  <div id="header-container"></div>
+  <header>
+    <h1><a href="메인 화면.html" style="text-decoration: none; color: white;">MINDMAP</a></h1>
+    <h3 style="color: white;">멘탈케어 올인원 사이트</h3>
+  </header>
+
+  <nav>
+    <a href="커뮤니티.html" onclick="showTab('community')">커뮤니티</a>
+    <a href="자가진단.html" onclick="showTab('selfCheck')">자가진단</a>
+    <a href="정책 연결.html" onclick="showTab('policy')">복지 서비스 알아보기</a>
+    <a href="병원 찾기.html" onclick="showTab('hospitalSearch')">병원 찾기</a>
+    <a href="여기저기추천.html" onclick="showTab('hospitalSearch')">3 in 1 추천 루트</a>
+    <a href="챌린지.html" onclick="showTab('hospitalSearch')">마인드 챌린지</a>
+  </nav>
+
+  <div class="container">
+    <h1> 3 in 1 추천 루트 </h1>
+    <p>현재 위치 또는 검색한 주소를 기준으로 공원과 문화센터, 문화공간을 추천해드릴게요!</p>
+    <button onclick="getLocation()">현재 위치 기준으로 추천 루트 찾아보기</button>
+    <button onclick="showAddressInput()">검색한 주소 기준으로 추천 루트 찾아보기</button>
+    <!-- 모달 창 -->
+    <div id="keyword-modal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>키워드로 장소 검색</h2>
+        <input type="text" id="modal-keyword-input" placeholder="키워드를 입력하세요" />
+        <button onclick="getRouteByKeyword()">검색</button>
+        <div id="search-results" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+
+    <div class="grid-container">
+      <div class="grid-item">
+      <h3>공원</h3>
+      <div id="park-list" class="location-list"></div>
+      </div>
+
+      <div class="grid-item">
+      <h3>문화센터</h3>
+      <div id="cultural-center-list" class="location-list"></div>
+      </div>
+
+      <div class="grid-item">
+      <h3>문화공간</h3>
+      <div id="cultural-space-list" class="location-list"></div>
+      </div>
+
+      <!-- 공원 모달 -->
+      <div id="park-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close" onclick="closeParkModal()">&times;</span>
+          <div id="park-modal-content"></div>
+        </div>
+      </div>
+
+      <!-- 문화센터 모달 -->
+      <div id="cultural-center-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close" onclick="closeCulturalCenterModal()">&times;</span>
+          <div id="cultural-center-modal-content"></div>
+        </div>
+      </div>
+
+      <!-- 문화공간 모달 -->
+      <div id="cultural-space-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close" onclick="closeCulturalSpaceModal()">&times;</span>
+          <div id="cultural-space-modal-content"></div>
+        </div>
+      </div>
+    
+    </div>
+  </div>
+
+  <div class="under-button">
+    <a href="https://mindmapchatbot-dwdnjzwsthkpheeuttbcpv.streamlit.app/" target="_blank">
+      <button class="menu-button">챗봇 상담</button>
+    </a>
+    <a href="메인 화면.html">
+      <button class="menu-button">홈으로 돌아가기</button>
+    </a>
+  </div>
+
+  <script src="script.js"></script>
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=daf71dc54132253e886554b17a000a86&libraries=services" onload="kakaoLoaded=true"></script>
+  <script>
+let kakaoLoaded = false;
+
+    let parkData = [];
+    let culturalCenterData = [];
+    let culturalSpaceData = [];
+  
+    // 공통 데이터 fetch 함수
+    function fetchData(url, callback) {
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          callback(data);
+        })
+        .catch(err => {
+          alert(`${url} 데이터를 불러오는 데 실패했어요.`);
+          console.error(err);
+        });
+    }
+  
+    // 데이터 fetch 호출
+    fetchData("서울시 공원.json", data => parkData = data);
+    fetchData("서울시 문화센터.json", data => culturalCenterData = data);
+    fetchData("서울시 문화공간.json", data => culturalSpaceData = data);
+  
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+      } else {
+        alert("이 브라우저에서는 위치 정보를 사용할 수 없어요.");
+      }
+    }
+
+    // 공통 거리 계산 함수
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371; // 지구 반경 (km)
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) ** 2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c; // km 반환
+    }
+  
+    function showPosition(position) {
+      const userLat = position.coords.latitude;
+      const userLon = position.coords.longitude;
+  
+      // 데이터를 각각 처리
+      displayParkLocations(parkData, userLat, userLon);
+      displayCulturalCenterLocations(culturalCenterData, userLat, userLon);
+      displayCulturalSpaceLocations(culturalSpaceData, userLat, userLon);
+    }
+
+    // 모달 열기
+    function showAddressInput() {
+      const modal = document.getElementById("keyword-modal");
+      modal.style.display = "block";
+    }
+
+    // 모달 닫기
+    function closeModal() {
+      const modal = document.getElementById("keyword-modal");
+      modal.style.display = "none";
+
+      // 검색 결과 초기화
+      const resultsContainer = document.getElementById("search-results");
+      resultsContainer.innerHTML = "";
+    }
+
+    // 키워드로 검색한 장소를 기준으로 추천 루트 찾아보기
+    function getRouteByKeyword() {
+  if (!kakaoLoaded || !window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
+    alert("카카오맵 서비스가 아직 로딩되지 않았어요. 잠시 후 다시 시도해주세요.");
+    return;
+  }
+      const keyword = document.getElementById("modal-keyword-input").value.trim();
+      if (!keyword) {
+        alert("키워드를 입력해주세요.");
+        return;
+      }
+    
+      const ps = new kakao.maps.services.Places();
+      ps.keywordSearch(keyword, function (data, status) {
+        const resultsContainer = document.getElementById("search-results");
+        if (status === kakao.maps.services.Status.OK) {
+          resultsContainer.innerHTML = "<h3>검색 결과:</h3>";
+          data.forEach((place, index) => {
+            const resultItem = document.createElement("div");
+            resultItem.innerHTML = `
+              <p><strong>${index + 1}. ${place.place_name}</strong> (${place.road_address_name || place.address_name})</p>
+              <button onclick="selectPlace(${place.y}, ${place.x})">이 장소 선택</button>
+            `;
+            resultsContainer.appendChild(resultItem);
+          });
+        } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
+          resultsContainer.innerHTML = "<p>검색 결과가 없습니다. 다른 키워드로 다시 검색해주세요.</p>";
+        } else {
+          alert("장소 검색 중 오류가 발생했습니다. 다시 시도해주세요.");
+        }
+      });
+    }
+
+    // 장소 선택
+    function selectPlace(userLat, userLon) {
+      closeModal(); // 모달 닫기
+
+      // 선택한 장소를 기준으로 추천 루트 출력
+      displayParkLocations(parkData, userLat, userLon);
+      displayCulturalCenterLocations(culturalCenterData, userLat, userLon);
+      displayCulturalSpaceLocations(culturalSpaceData, userLat, userLon);
+    }
+  
+    // 공원 데이터를 처리하고 출력
+    function displayParkLocations(data, userLat, userLon) {
+      const listElement = document.getElementById("park-list");
+      if (!listElement) {
+        console.error("ID가 'park-list'인 요소를 찾을 수 없습니다.");
+        return;
+      }
+
+      const processed = data.map(item => {
+        const [lat, lon] = item["위도,경도"].split(",").map(Number);
+        const dist = getDistance(userLat, userLon, lat, lon);
+        return { ...item, lat, lon, distance: dist };
+      });
+
+      processed.sort((a, b) => a.distance - b.distance);
+
+      listElement.innerHTML = "";
+      processed.slice(0, 3).forEach(item => {
+        const card = document.createElement("div");
+        card.classList.add("location-card");
+
+        card.innerHTML = `
+          <p><h3>${item["공원명"]}</h3></p>
+          <p><strong>주소:</strong> ${item["공원주소"]}</p>
+          <p><strong>거리:</strong> ${item.distance.toFixed(2)} km</p>
+          <p><a href="https://map.kakao.com/?q=${item["공원명"]}" target="_blank">카카오맵에서 보기</a></p>
+          <button onclick="openParkModal(
+          '${item["공원명"] || "정보 없음"}', 
+          '${item["주요시설"] ? item["주요시설"].replace(/'/g, "\\'") : "정보 없음"}', 
+          '${item["공원주소"] ? item["공원주소"].replace(/'/g, "\\'") : "정보 없음"}', 
+          '${item["오시는길"] ? item["오시는길"].replace(/'/g, "\\'") : "정보 없음"}', 
+          '${item["안내도"] ? item["안내도"].replace(/'/g, "\\'") : "정보 없음"}', 
+          '${item["이미지"] || "정보 없음"}', 
+          '${item["공원개요"] ? item["공원개요"].replace(/'/g, "\\'") : "정보 없음"}'
+        )">더보기</button>
+        `;
+
+        listElement.appendChild(card);
+      });
+    }
+
+    // 문화센터 데이터를 처리하고 출력// 문화센터 데이터를 처리하고 출력
+    function displayCulturalCenterLocations(data, userLat, userLon) {
+      const listElement = document.getElementById("cultural-center-list");
+      if (!listElement) {
+        console.error("ID가 'cultural-center-list'인 요소를 찾을 수 없습니다.");
+        return;
+      }
+
+      const processed = data.map(item => {
+        const [lat, lon] = item["위도,경도"].split(",").map(Number);
+        const dist = getDistance(userLat, userLon, lat, lon);
+        return { ...item, lat, lon, distance: dist };
+      });
+
+      processed.sort((a, b) => a.distance - b.distance);
+
+      listElement.innerHTML = "";
+      processed.slice(0, 3).forEach(item => {
+        const card = document.createElement("div");
+        card.classList.add("location-card");
+
+        card.innerHTML = `
+        <p><h3>${item["문화시설명"].replace(/'/g, "\\'") || "정보 없음"}</h3></p>
+        <p><strong>주소:</strong> ${item["주소"].replace(/'/g, "\\'") || "정보 없음"}</p>
+        <p><strong>거리:</strong> ${item.distance.toFixed(2)} km</p>
+        <p><a href="https://map.kakao.com/?q=${item["문화시설명"].replace(/'/g, "\\'") || "정보 없음"}" target="_blank">카카오맵에서 보기</a></p>
+        <button onclick="openCulturalCenterModal(
+          '${item["문화시설명"] || "정보 없음"}', 
+          '${item["주소"].replace(/'/g, "\\'") || "정보 없음"}', 
+          '${item["전화번호"] || "정보 없음"}', 
+          '${item["홈페이지"].replace(/'/g, "\\'") || "정보 없음"}',
+          '${item["휴관일"].replace(/'/g, "\\'") || "정보 없음"}',
+          '${item["무료구분"] || "정보 없음"}',
+          '${item["시설소개"].replace(/'/g, "\\'") || "정보 없음"}', 
+          '${item["대표이미지"].replace(/'/g, "\\'") || "정보 없음"}'
+        )">더보기</button>
+      `;
+
+        listElement.appendChild(card);
+      });
+    }
+
+    // 문화공간 데이터를 처리하고 출력
+    function displayCulturalSpaceLocations(data, userLat, userLon) {
+      const listElement = document.getElementById("cultural-space-list");
+      if (!listElement) {
+        console.error("ID가 'cultural-space-list'인 요소를 찾을 수 없습니다.");
+        return;
+      }
+    
+      const processed = data.map(item => {
+        const [lat, lon] = item["위도,경도"].split(",").map(Number);
+        const dist = getDistance(userLat, userLon, lat, lon);
+        return { ...item, lat, lon, distance: dist };
+      });
+    
+      processed.sort((a, b) => a.distance - b.distance);
+    
+      listElement.innerHTML = "";
+      processed.slice(0, 3).forEach(item => {
+        const card = document.createElement("div");
+        card.classList.add("location-card");
+    
+        card.innerHTML = `
+          <p><h3>${item["문화시설명"]}</h3></p>
+          <p><strong>주소:</strong> ${item["주소"]}</p>
+          <p><strong>거리:</strong> ${item.distance.toFixed(2)} km</p>
+          <p><a href="https://map.kakao.com/?q=${item["문화시설명"]}" target="_blank">카카오맵에서 보기</a></p>
+          <button onclick="openCulturalSpaceModal(
+            '${item["문화시설명"] || "정보 없음"}', 
+            '${item["주제분류"].replace(/'/g, "\\'") || "정보 없음"}', 
+            '${item["주소"].replace(/'/g, "\\'") || "정보 없음"}', 
+            '${item["전화번호"].replace(/'/g, "\\'") || "정보 없음"}', 
+            '${item["홈페이지"].replace(/'/g, "\\'") || "정보 없음"}',
+            '${item["시설소개"].replace(/'/g, "\\'") || "정보 없음"}', 
+            '${item["대표이미지"].replace(/'/g, "\\'") || "정보 없음"}'
+          )">더보기</button>
+        `;
+    
+        listElement.appendChild(card);
+      });
+    }
+    
+    function showError(error) {
+      alert("위치 정보를 가져오지 못했어요.");
+    }
+    
+    function openParkModal(name, facilities, address, directions, map, image, description) {
+      const modal = document.getElementById("park-modal");
+      const modalContent = document.getElementById("park-modal-content");
+    
+      if (!modal || !modalContent) {
+        console.error("공원 모달 요소를 찾을 수 없습니다.");
+        return;
+      }
+    
+      modalContent.innerHTML = `
+        <h2>${name}</h2>
+        <p><strong>주소:</strong> ${address}</p>
+        <p><strong>주요 시설:</strong> ${facilities}</p>
+        <p><strong>오시는 길:</strong> ${directions}</p>
+        <p><strong>안내도:</strong> ${map ? `<a href="${map}" target="_blank">안내도 보기</a>` : "정보 없음"}</p>
+        <p><strong>공원 개요:</strong> ${description}</p>
+        ${image ? `<img src="${image}" alt="${name}" style="max-width: 100%; height: auto;">` : "<p>이미지 없음</p>"}
+      `;
+    
+      modal.style.display = "block";
+    }
+    
+    function closeParkModal() {
+      const modal = document.getElementById("park-modal");
+      modal.style.display = "none";
+    }
+
+    function openCulturalCenterModal(name, address, phone, homepage, off, money, description, image) {
+      const modal = document.getElementById("cultural-center-modal");
+      const modalContent = document.getElementById("cultural-center-modal-content");
+    
+      if (!modal || !modalContent) {
+        console.error("문화센터 모달 요소를 찾을 수 없습니다.");
+        return;
+      }
+    
+      modalContent.innerHTML = `
+        <h2>${name}</h2>
+        <p><strong>주소:</strong> ${address}</p>
+        <p><strong>전화번호:</strong> ${phone}</p>
+        <p><strong>홈페이지:</strong> ${homepage ? `<a href="${homepage}" target="_blank">홈페이지 방문</a>` : "정보 없음"}</p>
+        <p><strong>휴관일:</strong> ${off}</p>
+        <p><strong>무료구분:</strong> ${money}</p>
+        <p><strong>시설 소개:</strong> ${description}</p>
+        ${image ? `<img src="${image}" alt="${name}" style="max-width: 100%; height: auto;">` : "<p>이미지 없음</p>"}
+      `;
+    
+      modal.style.display = "block";
+    }
+    
+    function closeCulturalCenterModal() {
+      const modal = document.getElementById("cultural-center-modal");
+      modal.style.display = "none";
+    }
+
+    function openCulturalSpaceModal(name, category, address, phone, homepage, description, image) {
+      const modal = document.getElementById("cultural-space-modal");
+      const modalContent = document.getElementById("cultural-space-modal-content");
+    
+      if (!modal || !modalContent) {
+        console.error("문화공간 모달 요소를 찾을 수 없습니다.");
+        return;
+      }
+    
+      modalContent.innerHTML = `
+        <h2>${name}</h2>
+        <p><strong>주제 분류:</strong> ${category}</p>
+        <p><strong>주소:</strong> ${address}</p>
+        <p><strong>전화번호:</strong> ${phone}</p>
+        <p><strong>홈페이지:</strong> ${homepage ? `<a href="${homepage}" target="_blank">홈페이지 방문</a>` : "정보 없음"}</p>
+        <p><strong>시설 소개:</strong> ${description}</p>
+        ${image ? `<img src="${image}" alt="${name}" style="max-width: 100%; height: auto;">` : "<p>이미지 없음</p>"}
+      `;
+    
+      modal.style.display = "block";
+    }
+    
+    function closeCulturalSpaceModal() {
+      const modal = document.getElementById("cultural-space-modal");
+      modal.style.display = "none";
+    }
+
+  </script>
+  <div id="postList"></div>
+  <script src="/js/header-loader.js"></script>
+</body>
+
+</html>

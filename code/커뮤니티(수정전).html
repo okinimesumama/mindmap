@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>커뮤니티</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="header-container"></div>
+  <header>
+    <h1><a href="메인 화면.html" style="text-decoration: none; color: white;">MINDMAP</a></h1>
+    <h3 style="color: white;">멘탈케어 올인원 사이트</h3>
+  </header>
+
+  <nav>
+    <a href="커뮤니티.html">커뮤니티</a>
+    <a href="자가진단.html">자가진단</a>
+    <a href="정책 연결.html">복지 서비스 알아보기</a>
+    <a href="병원 찾기.html">병원 찾기</a>
+    <a href="여기저기추천.html">3 in 1 추천 루트</a>
+    <a href="챌린지.html">마인드 챌린지</a>
+  </nav>
+
+  <div class="container">
+    <h1>커뮤니티</h1>
+    <p>병원에 대한 질문을 올리고, 서로 정보를 공유하는 공간</p>
+    <a href="커뮤니티_새글.html"><button>새 글 작성하기</button></a>
+    <div id="postList"></div>
+  </div>
+
+  <script>
+    async function loadPosts() {
+      const res = await fetch("/api/posts");
+      const posts = await res.json();
+      const list = document.getElementById("postList");
+      list.innerHTML = "";
+      posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      posts.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<h3>${p.title}</h3><p>${p.content}</p><p>작성자: ${p.author}</p><p>${new Date(p.createdAt).toLocaleString()}</p>`;
+        list.appendChild(card);
+      });
+    }
+    window.onload = loadPosts;
+  </script>
+  <script src="/js/header-loader.js"></script>
+</body>
+</html>

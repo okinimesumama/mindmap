@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>커뮤니티</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .card {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background-color: transparent;
+      color: #999;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .comment-box {
+      margin-top: 15px;
+    }
+    .comment {
+      margin-left: 15px;
+      margin-top: 8px;
+      font-size: 0.9em;
+      color: #333;
+    }
+    .comment-input {
+      width: 100%;
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #aaa;
+    }
+    .comment-submit {
+      margin-top: 5px;
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="header-container"></div>
+  <header>
+    <h1><a href="메인 화면.html" style="text-decoration: none; color: white;">MINDMAP</a></h1>
+    <h3 style="color: white;">멘탈케어 올인원 사이트</h3>
+  </header>
+
+  <nav>
+    <a href="커뮤니티.html">커뮤니티</a>
+    <a href="자가진단.html">자가진단</a>
+    <a href="정책 연결.html">복지 서비스 알아보기</a>
+    <a href="병원 찾기.html">병원 찾기</a>
+    <a href="여기저기추천.html">3 in 1 추천 루트</a>
+    <a href="챌린지.html">마인드 챌린지</a>
+  </nav>
+
+  <div class="container">
+    <h1>커뮤니티</h1>
+    <a href="커뮤니티_새글.html"><button>새 글 작성하기</button></a>
+    <div id="postList"></div>
+  </div>
+
+  <script>
+    async function loadPosts() {
+      const res = await fetch("/api/posts");
+      const posts = await res.json();
+      const list = document.getElementById("postList");
+      list.innerHTML = "";
+      posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      for (const p of posts) {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <button class="delete-btn" title="삭제">🗑</button>
+          <h3>${p.title}</h3>
+          <p>${p.content}</p>
+          <p><strong>작성자:</strong> ${p.author}</p>
+          <p><button class="like-btn">❤️ 추천</button> <span class="like-count">0</span>명 추천</p>
+          <div class="comment-box">
+            <input class="comment-input" placeholder="댓글을 입력하세요" />
+            <button class="comment-submit">댓글 등록</button>
+            <div class="comment-list" data-post-id="${p.id}"></div>
+          </div>
+        `;
+
+        const commentBtn = card.querySelector(".comment-submit");
+        const commentInput = card.querySelector(".comment-input");
+        const commentList = card.querySelector(".comment-list");
+        commentBtn.onclick = async () => {
+          const content = commentInput.value.trim();
+          if (!content) return alert("댓글 내용을 입력하세요.");
+          const res = await fetch("/api/comment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ postId: p.id, content })
+          });
+          const result = await res.json();
+          if (result.success) {
+            commentInput.value = "";
+            loadComments(p.id, commentList);
+          }
+        };
+
+        loadComments(p.id, commentList);
+
+        const likeBtn = card.querySelector(".like-btn");
+        const likeCount = card.querySelector(".like-count");
+        likeBtn.onclick = () => handleLike(p.id, likeCount);
+        loadLikes(p.id, likeCount);
+
+        const deleteBtn = card.querySelector(".delete-btn");
+        deleteBtn.onclick = async () => {
+          if (confirm("정말 삭제하시겠어요?")) {
+            const res = await fetch("/api/posts/" + p.id, { method: "DELETE" });
+            const result = await res.json();
+            if (result.success) {
+              alert("삭제되었습니다.");
+              loadPosts();
+            } else {
+              alert("삭제 실패: " + result.message);
+            }
+          }
+        };
+
+        list.appendChild(card);
+      }
+    }
+
+    async function loadComments(postId, container) {
+      const res = await fetch("/api/comments/" + postId);
+      const comments = await res.json();
+      container.innerHTML = "";
+      comments.forEach(c => {
+        const p = document.createElement("p");
+        p.className = "comment";
+        p.textContent = `${c.author}: ${c.content}`;
+        container.appendChild(p);
+      });
+    }
+
+    async function handleLike(postId, countSpan) {
+      const res = await fetch("/api/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId })
+      });
+      const result = await res.json();
+      if (result.success) {
+        countSpan.textContent = parseInt(countSpan.textContent) + 1;
+      } else if (result.message === "이미 추천함") {
+        alert("이미 추천하셨습니다.");
+      } else {
+        alert("추천 실패: " + result.message);
+      }
+    }
+
+    async function loadLikes(postId, countSpan) {
+      const res = await fetch("/api/likes/" + postId);
+      const result = await res.json();
+      countSpan.textContent = result.count;
+    }
+
+    window.onload = loadPosts;
+  </script>
+  <script src="/js/header-loader.js"></script>
+</body>
+</html>
